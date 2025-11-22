@@ -11,11 +11,13 @@ import SafariServices
 struct BlockedSitesView: View {
     @EnvironmentObject var blocklistManager: BlocklistManager
     @EnvironmentObject var statisticsManager: StatisticsManager
+    @StateObject private var screenTimeManager = ScreenTimeManager.shared
     @State private var showingAddSite = false
     @State private var newSiteDomain = ""
     @State private var showingEnableInstructions = false
     @State private var showingReloadAlert = false
     @State private var reloadMessage = ""
+    @State private var showScreenTimeAuth = false
 
     var body: some View {
         NavigationView {
@@ -51,16 +53,56 @@ struct BlockedSitesView: View {
                 } else {
                     List {
                         Section {
+                            if screenTimeManager.isAuthorized {
+                                HStack {
+                                    Image(systemName: "checkmark.shield.fill")
+                                        .foregroundColor(.green)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Cross-Browser Protection Active")
+                                            .foregroundColor(.primary)
+                                            .font(.subheadline)
+                                        Text("Blocking in all browsers via Screen Time")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                }
+                                .padding(.vertical, 4)
+                            } else {
+                                Button(action: {
+                                    showScreenTimeAuth = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "exclamationmark.shield.fill")
+                                            .foregroundColor(.orange)
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Enable All-Browser Blocking")
+                                                .foregroundColor(.primary)
+                                                .font(.subheadline)
+                                            Text("Tap to block in Chrome, Firefox, Opera, etc.")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+
                             Button(action: {
                                 showingEnableInstructions = true
                             }) {
                                 HStack {
-                                    Image(systemName: "info.circle.fill")
+                                    Image(systemName: "safari")
                                         .foregroundColor(.blue)
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Enable Content Blocker in Safari")
+                                        Text("Enable Safari Content Blocker")
                                             .foregroundColor(.primary)
-                                        Text("Works in Safari only")
+                                            .font(.subheadline)
+                                        Text("Additional layer of protection")
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
@@ -70,9 +112,15 @@ struct BlockedSitesView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
+                            .padding(.vertical, 4)
                         } footer: {
-                            Text("⚠️ Content blocking only works in Safari. Chrome, Firefox, and other browsers are not supported due to iOS limitations.")
-                                .font(.caption)
+                            if screenTimeManager.isAuthorized {
+                                Text("✅ You have the best protection! Sites are blocked in ALL browsers using Screen Time + Safari Content Blocker.")
+                                    .font(.caption)
+                            } else {
+                                Text("⚠️ Safari-only blocking is active. Enable Screen Time for protection in Chrome, Firefox, and all other browsers.")
+                                    .font(.caption)
+                            }
                         }
 
                         Section(header: Text("Blocked Sites (\(blocklistManager.blockedSites.count))")) {
@@ -143,6 +191,9 @@ struct BlockedSitesView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(reloadMessage)
+            }
+            .sheet(isPresented: $showScreenTimeAuth) {
+                ScreenTimeAuthView(isPresented: $showScreenTimeAuth)
             }
         }
     }

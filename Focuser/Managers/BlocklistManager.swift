@@ -13,11 +13,19 @@ class BlocklistManager: ObservableObject {
 
     private let blockedSitesKey = "blocked_sites"
     private let defaults = UserDefaults(suiteName: "group.com.puranjanics.Focuser") ?? .standard
+    private let screenTimeManager = ScreenTimeManager.shared
 
     init() {
         loadBlockedSites()
         if blockedSites.isEmpty {
             loadDefaultBlocklist()
+        } else {
+            // Sync existing blocklist with Screen Time on init
+            Task { @MainActor in
+                if screenTimeManager.isAuthorized {
+                    updateScreenTimeBlocks()
+                }
+            }
         }
     }
 
@@ -34,12 +42,33 @@ class BlocklistManager: ObservableObject {
         blockedSites.append(newSite)
         saveBlockedSites()
         reloadContentBlocker()
+
+        // Also block in Screen Time (all browsers)
+        Task { @MainActor in
+            if screenTimeManager.isAuthorized {
+                updateScreenTimeBlocks()
+            }
+        }
     }
 
     func removeSite(_ site: BlockedSite) {
         blockedSites.removeAll { $0.id == site.id }
         saveBlockedSites()
         reloadContentBlocker()
+
+        // Also update Screen Time
+        Task { @MainActor in
+            if screenTimeManager.isAuthorized {
+                updateScreenTimeBlocks()
+            }
+        }
+    }
+
+    @MainActor
+    func updateScreenTimeBlocks() {
+        let domains = blockedSites.map { $0.domain }
+        screenTimeManager.blockWebsites(domains)
+        print("BlocklistManager: Updated Screen Time with \(domains.count) domains")
     }
 
     private func loadDefaultBlocklist() {

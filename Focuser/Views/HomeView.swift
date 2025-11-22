@@ -10,7 +10,9 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var statisticsManager = StatisticsManager()
     @StateObject private var blocklistManager = BlocklistManager()
+    @StateObject private var screenTimeManager = ScreenTimeManager.shared
     @State private var selectedTab = 0
+    @State private var showScreenTimeAuth = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -46,6 +48,18 @@ struct HomeView: View {
                 .tag(3)
         }
         .accentColor(.blue)
+        .sheet(isPresented: $showScreenTimeAuth) {
+            ScreenTimeAuthView(isPresented: $showScreenTimeAuth)
+        }
+        .onAppear {
+            // Show Screen Time auth if not authorized
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if !screenTimeManager.isAuthorized && !UserDefaults.standard.bool(forKey: "hasSeenScreenTimePrompt") {
+                    showScreenTimeAuth = true
+                    UserDefaults.standard.set(true, forKey: "hasSeenScreenTimePrompt")
+                }
+            }
+        }
     }
 }
 

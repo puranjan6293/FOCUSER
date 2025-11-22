@@ -32,6 +32,16 @@ STEP 3: Configure App Groups (CRITICAL)
 
 IMPORTANT: Make sure you use the EXACT same App Group name in both targets!
 
+STEP 3.5: Add Family Controls Capability (NEW - For Cross-Browser Blocking)
+----------------------------------------------------------------------------
+1. Select the "Focuser" target (main app only, NOT ContentBlocker)
+2. Go to "Signing & Capabilities" tab
+3. Click "+ Capability"
+4. Add "Family Controls"
+5. This enables Screen Time API for blocking across ALL browsers
+
+NOTE: Family Controls only needs to be added to the main Focuser target, not ContentBlocker!
+
 STEP 4: Add Files to Main App Target
 -------------------------------------
 1. In Project Navigator, select all files in the Focuser/Models, Focuser/Managers, and Focuser/Views folders
