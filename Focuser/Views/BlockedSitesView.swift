@@ -109,27 +109,60 @@ struct BlockedSitesView: View {
                             Text("Follow the setup guide to enable content blocking in Safari")
                         }
 
+                        // Category sections for blocked sites
                         Section(header: Text("Blocked Sites")) {
-                            ForEach(blocklistManager.blockedSites.sorted(by: { $0.domain < $1.domain })) { site in
-                                HStack(spacing: 12) {
+                            // Default blocked sites
+                            NavigationLink(destination: SiteListDetailView(
+                                category: "Default Blocked Sites",
+                                sites: blocklistManager.blockedSites.filter { $0.isDefault },
+                                showDeleteOption: false
+                            )) {
+                                HStack {
                                     Image(systemName: "shield.fill")
-                                        .foregroundColor(site.isDefault ? .blue : .green)
+                                        .foregroundColor(.blue)
                                         .font(.body)
 
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(site.domain)
+                                        Text("Default Blocked Sites")
                                             .font(.body)
 
-                                        if !site.isDefault {
-                                            Text("Added \(formattedDate(site.dateAdded))")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
+                                        Text("\(blocklistManager.blockedSites.filter { $0.isDefault }.count) sites")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
                                     }
+
+                                    Spacer()
                                 }
                                 .padding(.vertical, 4)
                             }
-                            .onDelete(perform: deleteSites)
+
+                            // Added blocked sites
+                            NavigationLink(destination: SiteListDetailView(
+                                category: "Added Blocked Sites",
+                                sites: blocklistManager.blockedSites.filter { !$0.isDefault },
+                                showDeleteOption: true,
+                                onDelete: { site in
+                                    deleteSite(site)
+                                }
+                            )) {
+                                HStack {
+                                    Image(systemName: "shield.fill")
+                                        .foregroundColor(.green)
+                                        .font(.body)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Added Blocked Sites")
+                                            .font(.body)
+
+                                        Text("\(blocklistManager.blockedSites.filter { !$0.isDefault }.count) sites")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding(.vertical, 4)
+                            }
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -184,6 +217,23 @@ struct BlockedSitesView: View {
             let site = sortedSites[index]
             blocklistManager.removeSite(site)
         }
+
+        blocklistManager.reloadContentBlocker { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    reloadMessage = "Site removed successfully"
+                    Haptics.success()
+                } else {
+                    reloadMessage = "Site removed but reload failed: \(error ?? "Unknown")"
+                    Haptics.error()
+                }
+                showingReloadAlert = true
+            }
+        }
+    }
+
+    private func deleteSite(_ site: BlockedSite) {
+        blocklistManager.removeSite(site)
 
         blocklistManager.reloadContentBlocker { success, error in
             DispatchQueue.main.async {
@@ -336,5 +386,114 @@ struct InstructionStep: View {
                     .foregroundColor(.secondary)
             }
         }
+    }
+}
+
+// Detail view to show sites for a specific category
+struct SiteListDetailView: View {
+    let category: String
+    let sites: [BlockedSite]
+    let showDeleteOption: Bool
+    var onDelete: ((BlockedSite) -> Void)?
+
+    @State private var showingReloadAlert = false
+    @State private var reloadMessage = ""
+
+    var body: some View {
+        Group {
+            if sites.isEmpty {
+                VStack(spacing: 24) {
+                    Spacer()
+
+                    Image(systemName: "shield.slash")
+                        .font(.system(size: 64))
+                        .foregroundColor(.secondary)
+
+                    VStack(spacing: 8) {
+                        Text("No Sites")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+
+                        Text("No sites in this category")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+                }
+            } else {
+                if showDeleteOption {
+                    List {
+                        ForEach(sites.sorted(by: { $0.domain < $1.domain })) { site in
+                            HStack(spacing: 12) {
+                                Image(systemName: "shield.fill")
+                                    .foregroundColor(site.isDefault ? .blue : .green)
+                                    .font(.body)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(site.domain)
+                                        .font(.body)
+
+                                    if !site.isDefault {
+                                        Text("Added \(formattedDate(site.dateAdded))")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .onDelete(perform: deleteSites)
+                    }
+                    .listStyle(.insetGrouped)
+                } else {
+                    List {
+                        ForEach(sites.sorted(by: { $0.domain < $1.domain })) { site in
+                            HStack(spacing: 12) {
+                                Image(systemName: "shield.fill")
+                                    .foregroundColor(site.isDefault ? .blue : .green)
+                                    .font(.body)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(site.domain)
+                                        .font(.body)
+
+                                    if !site.isDefault {
+                                        Text("Added \(formattedDate(site.dateAdded))")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
+            }
+        }
+        .navigationTitle(category)
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Success", isPresented: $showingReloadAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(reloadMessage)
+        }
+    }
+
+    private func deleteSites(at offsets: IndexSet) {
+        guard showDeleteOption, let onDelete = onDelete else { return }
+
+        let sortedSites = sites.sorted(by: { $0.domain < $1.domain })
+        for index in offsets {
+            let site = sortedSites[index]
+            onDelete(site)
+        }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
