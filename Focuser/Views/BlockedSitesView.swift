@@ -82,6 +82,33 @@ struct BlockedSitesView: View {
                             }
                         }
 
+                        // Safari extension setup
+                        Section {
+                            Button(action: {
+                                showingEnableInstructions = true
+                            }) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Enable Extension for Safari")
+                                            .font(.body)
+                                            .foregroundColor(.primary)
+
+                                        Text("Extra protection layer")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        } footer: {
+                            Text("Follow the setup guide to enable content blocking in Safari")
+                        }
+
                         Section(header: Text("Blocked Sites")) {
                             ForEach(blocklistManager.blockedSites.sorted(by: { $0.domain < $1.domain })) { site in
                                 HStack(spacing: 12) {
