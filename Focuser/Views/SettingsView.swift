@@ -21,12 +21,6 @@ struct SettingsView: View {
                     Toggle("Motivational Quotes", isOn: $settingsManager.settings.showMotivationalQuotes)
                 }
 
-                Section(header: Text("Support")) {
-                    NavigationLink(destination: AccountabilityView(settingsManager: settingsManager)) {
-                        Text("Accountability Partner")
-                    }
-                }
-
                 Section(header: Text("About")) {
                     HStack {
                         Text("Version")
@@ -146,54 +140,6 @@ struct FeatureRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-        }
-    }
-}
-
-// Clean Accountability view
-struct AccountabilityView: View {
-    @ObservedObject var settingsManager: SettingsManager
-
-    var body: some View {
-        List {
-            Section {
-                TextField("Partner's Email", text: Binding(
-                    get: { settingsManager.settings.accountabilityPartnerEmail ?? "" },
-                    set: { settingsManager.settings.accountabilityPartnerEmail = $0.isEmpty ? nil : $0 }
-                ))
-                .keyboardType(.emailAddress)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-            } header: {
-                Text("Email Address")
-            } footer: {
-                Text("Your accountability partner will receive weekly progress updates")
-            }
-
-            Section(header: Text("Why It Helps")) {
-                BenefitRow(icon: "person.2.fill", title: "Extra Accountability", color: .blue)
-                BenefitRow(icon: "chart.bar.fill", title: "Share Your Progress", color: .green)
-                BenefitRow(icon: "heart.fill", title: "Get Support", color: .red)
-            }
-        }
-        .navigationTitle("Accountability Partner")
-    }
-}
-
-struct BenefitRow: View {
-    let icon: String
-    let title: String
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .font(.body)
-                .frame(width: 24)
-
-            Text(title)
-                .font(.body)
         }
     }
 }
