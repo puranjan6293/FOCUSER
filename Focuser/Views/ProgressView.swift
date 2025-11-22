@@ -10,71 +10,277 @@ import SwiftUI
 struct ProgressView: View {
     @EnvironmentObject var statisticsManager: StatisticsManager
     @EnvironmentObject var blocklistManager: BlocklistManager
+    @EnvironmentObject var settingsManager: SettingsManager
 
     var body: some View {
         NavigationView {
-            List {
-                Section {
-                    // Large number display
-                    VStack(spacing: 16) {
-                        Text("\(statisticsManager.daysClean)")
-                            .font(.system(size: 72, weight: .bold, design: .rounded))
-                            .foregroundColor(.blue)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 32) {
+                    // Recovery Ring
+                    RecoveryRingSection(
+                        settings: settingsManager.settings,
+                        daysClean: statisticsManager.daysClean
+                    )
+                    .padding(.top, 8)
 
-                        Text(statisticsManager.daysClean == 1 ? "Day Clean" : "Days Clean")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
+                    // Milestones
+                    MilestonesSection(daysClean: statisticsManager.daysClean)
+
+                    // Statistics
+                    StatisticsSection(
+                        resists: statisticsManager.statistics.manualResists,
+                        blockedSites: blocklistManager.blockedSites.count,
+                        daysClean: statisticsManager.daysClean
+                    )
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Progress")
+            .navigationBarTitleDisplayMode(.large)
+        }
+    }
+}
 
-                Section(header: Text("Statistics")) {
-                    StatRow(label: "Times Resisted", value: "\(statisticsManager.statistics.manualResists)", color: .green)
-                    StatRow(label: "Sites Protected", value: "\(blocklistManager.blockedSites.count)", color: .orange)
-                    StatRow(label: "Daily Average", value: String(format: "%.1f", dailyAverage), color: .purple)
-                }
+// MARK: - Recovery Ring Section
+struct RecoveryRingSection: View {
+    let settings: UserSettings
+    let daysClean: Int
 
-                Section(header: Text("Milestones")) {
-                    MilestoneItem(title: "First Day", days: 1, achieved: statisticsManager.daysClean >= 1)
-                    MilestoneItem(title: "One Week", days: 7, achieved: statisticsManager.daysClean >= 7)
-                    MilestoneItem(title: "Two Weeks", days: 14, achieved: statisticsManager.daysClean >= 14)
-                    MilestoneItem(title: "One Month", days: 30, achieved: statisticsManager.daysClean >= 30)
-                    MilestoneItem(title: "90 Days", days: 90, achieved: statisticsManager.daysClean >= 90)
-                    MilestoneItem(title: "Half Year", days: 180, achieved: statisticsManager.daysClean >= 180)
-                    MilestoneItem(title: "One Year", days: 365, achieved: statisticsManager.daysClean >= 365)
+    var body: some View {
+        VStack(spacing: 24) {
+            ZStack {
+                // Background circle
+                Circle()
+                    .stroke(Color(.tertiarySystemGroupedBackground), lineWidth: 20)
+                    .frame(width: 180, height: 180)
+
+                // Progress circle
+                Circle()
+                    .trim(from: 0, to: progressPercentage)
+                    .stroke(.blue, style: StrokeStyle(lineWidth: 20, lineCap: .round))
+                    .frame(width: 180, height: 180)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.spring(response: 1.0), value: progressPercentage)
+
+                // Center text
+                VStack(spacing: 4) {
+                    Text("\(Int(progressPercentage * 100))%")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
+
+                    Text("Complete")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Progress")
+
+            VStack(spacing: 8) {
+                Text("Recovery Journey")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text("\(daysClean) of \(estimatedDays) days")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
-    private var dailyAverage: Double {
-        guard statisticsManager.daysClean > 0 else { return 0 }
-        return Double(statisticsManager.statistics.manualResists) / Double(max(1, statisticsManager.daysClean))
+    var estimatedDays: Int {
+        calculateEstimatedRecoveryDays(settings: settings)
+    }
+
+    var progressPercentage: CGFloat {
+        min(CGFloat(daysClean) / CGFloat(estimatedDays), 1.0)
+    }
+}
+
+// MARK: - Milestones Section
+struct MilestonesSection: View {
+    let daysClean: Int
+
+    let milestones = [
+        (days: 1, label: "First Day", icon: "1.circle.fill"),
+        (days: 7, label: "One Week", icon: "7.circle.fill"),
+        (days: 14, label: "Two Weeks", icon: "14.circle.fill"),
+        (days: 30, label: "One Month", icon: "star.circle.fill"),
+        (days: 90, label: "Three Months", icon: "crown.fill"),
+        (days: 180, label: "Six Months", icon: "trophy.fill"),
+        (days: 365, label: "One Year", icon: "medal.fill")
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Milestones")
+                .font(.headline)
+                .foregroundColor(.primary)
+
+            VStack(spacing: 12) {
+                ForEach(milestones, id: \.days) { milestone in
+                    MilestoneItemRow(
+                        label: milestone.label,
+                        days: milestone.days,
+                        icon: milestone.icon,
+                        isAchieved: daysClean >= milestone.days,
+                        progress: min(CGFloat(daysClean) / CGFloat(milestone.days), 1.0)
+                    )
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+struct MilestoneItemRow: View {
+    let label: String
+    let days: Int
+    let icon: String
+    let isAchieved: Bool
+    let progress: CGFloat
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(isAchieved ? .green : Color(.tertiarySystemGroupedBackground))
+                    .frame(width: 40, height: 40)
+
+                if isAchieved {
+                    Image(systemName: icon)
+                        .font(.body)
+                        .foregroundColor(.white)
+                } else {
+                    Text("\(days)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            // Text
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(isAchieved ? .primary : .secondary)
+
+                if !isAchieved {
+                    // Progress bar
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(.tertiarySystemGroupedBackground))
+
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(.blue)
+                                .frame(width: geometry.size.width * progress)
+                        }
+                    }
+                    .frame(height: 6)
+                }
+            }
+
+            Spacer()
+
+            // Checkmark
+            if isAchieved {
+                Image(systemName: "checkmark")
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.green)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Statistics Section
+struct StatisticsSection: View {
+    let resists: Int
+    let blockedSites: Int
+    let daysClean: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Statistics")
+                .font(.headline)
+                .foregroundColor(.primary)
+
+            VStack(spacing: 12) {
+                StatRow(
+                    label: "Times Resisted",
+                    value: "\(resists)",
+                    icon: "hand.raised.fill",
+                    color: .green
+                )
+
+                StatRow(
+                    label: "Sites Blocked",
+                    value: "\(blockedSites)",
+                    icon: "shield.fill",
+                    color: .orange
+                )
+
+                StatRow(
+                    label: "Current Streak",
+                    value: "\(daysClean)",
+                    icon: "flame.fill",
+                    color: .red
+                )
+
+                StatRow(
+                    label: "Daily Average",
+                    value: String(format: "%.1f", dailyAverage),
+                    icon: "chart.line.uptrend.xyaxis",
+                    color: .blue
+                )
+            }
+        }
+        .padding(20)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    var dailyAverage: Double {
+        guard daysClean > 0 else { return 0 }
+        return Double(resists) / Double(max(1, daysClean))
     }
 }
 
 struct StatRow: View {
     let label: String
     let value: String
+    let icon: String
     let color: Color
 
     var body: some View {
-        HStack {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(color)
+                .frame(width: 32)
+
             Text(label)
                 .font(.body)
+                .foregroundColor(.primary)
 
             Spacer()
 
             Text(value)
                 .font(.title3)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
                 .foregroundColor(color)
         }
+        .padding(.vertical, 4)
     }
 }
 
+// MARK: - Legacy Support
 struct MilestoneItem: View {
     let title: String
     let days: Int
@@ -107,7 +313,6 @@ struct MilestoneItem: View {
     }
 }
 
-// Legacy support
 struct ProgressCard: View {
     let title: String
     let value: String
@@ -117,17 +322,6 @@ struct ProgressCard: View {
     let description: String
 
     var body: some View {
-        StatRow(label: title, value: value, color: color)
-    }
-}
-
-struct MilestoneRow: View {
-    let title: String
-    let days: String
-    let achieved: Bool
-    let index: Int
-
-    var body: some View {
-        MilestoneItem(title: title, days: Int(days.components(separatedBy: " ").first ?? "1") ?? 1, achieved: achieved)
+        StatRow(label: title, value: value, icon: icon, color: color)
     }
 }
