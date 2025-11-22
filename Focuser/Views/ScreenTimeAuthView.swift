@@ -17,27 +17,36 @@ struct ScreenTimeAuthView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 32) {
-                    VStack(spacing: 16) {
-                        Image(systemName: "lock.shield.fill")
-                            .font(.system(size: 80))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.blue, .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                    VStack(spacing: 20) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.purple.opacity(0.1))
+                                .frame(width: 120, height: 120)
+
+                            Image(systemName: "lock.shield.fill")
+                                .font(.system(size: 60))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: Color.primaryGradient,
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
+                        }
 
-                        Text("Enable Cross-Browser Blocking")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
+                        VStack(spacing: 8) {
+                            Text("Enable Cross-Browser Blocking")
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .multilineTextAlignment(.center)
 
-                        Text("Block sites in Chrome, Firefox, Opera, and ALL browsers using Apple's Screen Time technology")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                            Text("Block sites in Chrome, Firefox, Opera, and ALL browsers using Apple's Screen Time technology")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(4)
+                                .padding(.horizontal)
+                        }
                     }
                     .padding(.top, 40)
 
@@ -74,34 +83,45 @@ struct ScreenTimeAuthView: View {
 
                     VStack(spacing: 16) {
                         if isRequesting {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .padding()
+                            VStack(spacing: 16) {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+
+                                Text("Requesting authorization...")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 32)
                         } else {
                             Button(action: requestAuthorization) {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "shield.checkmark.fill")
+                                        .font(.title3)
                                     Text("Enable Protection")
                                         .font(.headline)
+                                        .fontWeight(.semibold)
                                 }
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 56)
+                                .frame(height: 60)
                                 .background(
                                     LinearGradient(
-                                        colors: [.blue, .purple],
+                                        colors: Color.primaryGradient,
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
                                 )
-                                .cornerRadius(16)
+                                .cornerRadius(18)
+                                .shadow(color: Color.blue.opacity(0.3), radius: 15, y: 8)
                             }
+                            .scaleButton()
 
                             Button(action: {
                                 isPresented = false
                             }) {
                                 Text("Maybe Later")
                                     .font(.subheadline)
+                                    .fontWeight(.medium)
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -144,19 +164,29 @@ struct FeatureItem: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-                .frame(width: 32)
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 48, height: 48)
 
-            VStack(alignment: .leading, spacing: 4) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(color)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.headline)
+                    .fontWeight(.semibold)
 
                 Text(description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .lineSpacing(2)
             }
+
+            Spacer()
         }
+        .padding(.vertical, 4)
     }
 }

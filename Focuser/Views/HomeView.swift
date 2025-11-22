@@ -83,43 +83,47 @@ struct DashboardView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
-                    VStack(spacing: 16) {
-                        Text("Days Clean")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    // Hero Section with Animated Progress Ring
+                    ZStack {
+                        Color.blue
 
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text("\(statisticsManager.daysClean)")
-                                .font(.system(size: 72, weight: .bold, design: .rounded))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [.blue, .purple],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
+                        VStack(spacing: 20) {
+                            ZStack {
+                                AnimatedProgressRing(
+                                    progress: min(Double(statisticsManager.daysClean) / 90.0, 1.0),
+                                    lineWidth: 12,
+                                    gradient: [.white, .white.opacity(0.7)]
                                 )
+                                .frame(width: 180, height: 180)
 
-                            Text("days")
-                                .font(.title2)
-                                .foregroundColor(.secondary)
-                        }
+                                VStack(spacing: 4) {
+                                    Text("\(statisticsManager.daysClean)")
+                                        .font(.system(size: 64, weight: .bold, design: .rounded))
+                                        .foregroundColor(.white)
 
-                        if statisticsManager.daysClean > 0 {
-                            Text("Keep going! You're doing amazing.")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("Your journey starts today!")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                    Text("days clean")
+                                        .font(.title3)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.white.opacity(0.9))
+                                }
+                            }
+
+                            if statisticsManager.daysClean > 0 {
+                                Text("Keep going! You're doing amazing.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.95))
+                            } else {
+                                Text("Your journey starts today!")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.95))
+                            }
                         }
+                        .padding(.vertical, 40)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 32)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(.secondarySystemBackground))
-                    )
+                    .frame(height: 300)
+                    .cornerRadius(28)
+                    .shadow(color: Color.blue.opacity(0.3), radius: 20, y: 10)
                     .padding(.horizontal)
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
@@ -154,65 +158,88 @@ struct DashboardView: View {
                     .padding(.horizontal)
 
                     Button(action: {
-                        statisticsManager.recordResist()
+                        withAnimation(.bouncy) {
+                            statisticsManager.recordResist()
+                        }
                     }) {
-                        HStack {
+                        HStack(spacing: 12) {
                             Image(systemName: "hand.raised.fill")
+                                .font(.title3)
                             Text("I Resisted an Urge")
                                 .font(.headline)
+                                .fontWeight(.semibold)
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 54)
+                        .frame(height: 60)
                         .background(
                             LinearGradient(
-                                colors: [.green, .blue],
+                                colors: Color.successGradient,
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .cornerRadius(16)
+                        .cornerRadius(18)
+                        .shadow(color: Color.green.opacity(0.3), radius: 15, y: 8)
                     }
+                    .scaleButton()
                     .padding(.horizontal)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Daily Motivation", systemImage: "sparkles")
-                            .font(.headline)
-                            .foregroundColor(.primary)
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.yellow.opacity(0.15))
+                                    .frame(width: 40, height: 40)
+
+                                Image(systemName: "sparkles")
+                                    .font(.title3)
+                                    .foregroundColor(.yellow)
+                            }
+
+                            Text("Daily Motivation")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+
+                            Spacer()
+                        }
 
                         Text(motivationalQuotes.randomElement() ?? "Stay strong!")
                             .font(.body)
-                            .foregroundColor(.secondary)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
                             .italic()
+                            .lineSpacing(4)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.secondarySystemBackground))
-                    )
+                    .padding(24)
+                    .glassCard(cornerRadius: 20)
                     .padding(.horizontal)
 
                     Button(action: {
                         showEmergency = true
                     }) {
-                        HStack {
+                        HStack(spacing: 12) {
                             Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.title3)
                             Text("Need Help Now?")
                                 .font(.headline)
+                                .fontWeight(.semibold)
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 54)
+                        .frame(height: 60)
                         .background(
                             LinearGradient(
-                                colors: [.red, .orange],
+                                colors: Color.dangerGradient,
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .cornerRadius(16)
+                        .cornerRadius(18)
+                        .shadow(color: Color.red.opacity(0.3), radius: 15, y: 8)
                     }
+                    .scaleButton()
                     .padding(.horizontal)
                     .padding(.bottom, 32)
                 }
@@ -232,31 +259,51 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
+    @State private var isAnimated = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 48, height: 48)
+
+                    Image(systemName: icon)
+                        .font(.title3)
+                        .foregroundColor(color)
+                }
 
                 Spacer()
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(value)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [color, color.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
 
                 Text(title)
                     .font(.subheadline)
+                    .fontWeight(.medium)
                     .foregroundColor(.secondary)
             }
         }
-        .padding(16)
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.secondarySystemBackground))
-        )
+        .frame(height: 140)
+        .glassCard(cornerRadius: 20)
+        .scaleEffect(isAnimated ? 1.0 : 0.8)
+        .opacity(isAnimated ? 1.0 : 0)
+        .onAppear {
+            withAnimation(.smooth.delay(Double.random(in: 0...0.3))) {
+                isAnimated = true
+            }
+        }
     }
 }

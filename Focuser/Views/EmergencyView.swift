@@ -25,21 +25,44 @@ struct EmergencyView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
-                    VStack(spacing: 16) {
-                        Image(systemName: "heart.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.red)
+                    // Hero Section
+                    ZStack {
+                        LinearGradient(
+                            colors: Color.dangerGradient + [Color.orange.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
 
-                        Text("You've Got This")
-                            .font(.title)
-                            .fontWeight(.bold)
+                        VStack(spacing: 20) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white.opacity(0.2))
+                                    .frame(width: 100, height: 100)
 
-                        Text("This urge will pass. Try one of these strategies:")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
+                                Image(systemName: "heart.circle.fill")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.white)
+                                    .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
+                            }
+
+                            VStack(spacing: 8) {
+                                Text("You've Got This")
+                                    .font(.title)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+
+                                Text("This urge will pass. Try one of these strategies:")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.95))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                            }
+                        }
+                        .padding(.vertical, 40)
                     }
-                    .padding(.vertical, 32)
+                    .cornerRadius(28)
+                    .shadow(color: Color.red.opacity(0.3), radius: 20, y: 10)
+                    .padding(.horizontal)
 
                     VStack(spacing: 16) {
                         ForEach(emergencyStrategies) { strategy in
@@ -48,22 +71,34 @@ struct EmergencyView: View {
                     }
                     .padding(.horizontal)
 
-                    VStack(spacing: 12) {
-                        Text("Remember")
-                            .font(.headline)
+                    VStack(alignment: .leading, spacing: 20) {
+                        HStack {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.green.opacity(0.15))
+                                    .frame(width: 40, height: 40)
 
-                        VStack(alignment: .leading, spacing: 8) {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.green)
+                            }
+
+                            Text("Remember")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+
+                            Spacer()
+                        }
+
+                        VStack(alignment: .leading, spacing: 12) {
                             RememberPoint(text: "Urges peak and then fade")
                             RememberPoint(text: "You've overcome this before")
                             RememberPoint(text: "Every 'no' makes you stronger")
                             RememberPoint(text: "Your future self will thank you")
                         }
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.secondarySystemBackground))
-                    )
+                    .padding(24)
+                    .glassCard(cornerRadius: 20)
                     .padding(.horizontal)
 
                     Button(action: {
@@ -71,14 +106,25 @@ struct EmergencyView: View {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        Label("Visit NoFap Resources", systemImage: "link")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.blue)
-                            .cornerRadius(12)
+                        HStack(spacing: 12) {
+                            Image(systemName: "link")
+                            Text("Visit NoFap Resources")
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(
+                            LinearGradient(
+                                colors: Color.primaryGradient,
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(16)
+                        .shadow(color: Color.blue.opacity(0.3), radius: 15, y: 8)
                     }
+                    .scaleButton()
                     .padding(.horizontal)
                     .padding(.bottom, 32)
                 }
@@ -106,30 +152,47 @@ struct Strategy: Identifiable {
 
 struct StrategyCard: View {
     let strategy: Strategy
+    @State private var isPressed = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            Image(systemName: strategy.icon)
-                .font(.title2)
-                .foregroundColor(strategy.color)
-                .frame(width: 40)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(strategy.title)
-                    .font(.headline)
-
-                Text(strategy.description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+        Button(action: {
+            withAnimation(.bouncy) {
+                isPressed = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    isPressed = false
+                }
             }
+        }) {
+            HStack(alignment: .top, spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(strategy.color.opacity(0.15))
+                        .frame(width: 48, height: 48)
 
-            Spacer()
+                    Image(systemName: strategy.icon)
+                        .font(.title3)
+                        .foregroundColor(strategy.color)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(strategy.title)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    Text(strategy.description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineSpacing(2)
+                }
+
+                Spacer()
+            }
+            .padding(20)
+            .glassCard(cornerRadius: 16)
+            .scaleEffect(isPressed ? 0.95 : 1.0)
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
-        )
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -137,14 +200,17 @@ struct RememberPoint: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundColor(.green)
-                .font(.caption)
+                .font(.body)
 
             Text(text)
                 .font(.subheadline)
+                .fontWeight(.medium)
                 .foregroundColor(.secondary)
+
+            Spacer()
         }
     }
 }

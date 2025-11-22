@@ -10,81 +10,94 @@ import SwiftUI
 struct OnboardingView: View {
     @Binding var isOnboardingComplete: Bool
     @State private var currentPage = 0
+    @Namespace private var animation
+
+    let pages: [(icon: String, title: String, description: String, gradient: [Color])] = [
+        ("shield.checkered", "Take Control", "Block harmful content across all browsers and reclaim your digital wellbeing.", Color.primaryGradient),
+        ("chart.line.uptrend.xyaxis.circle.fill", "Track Progress", "Visualize your journey with beautiful stats, streaks, and milestone celebrations.", Color.successGradient),
+        ("sparkles", "Stay Motivated", "Daily inspiration, accountability features, and emergency support when you need it.", Color.warningGradient),
+        ("hands.clap.fill", "You've Got This", "Join thousands of people transforming their lives, one day at a time.", Color.coolGradient)
+    ]
 
     var body: some View {
         ZStack {
-            Color(.systemBackground)
-                .ignoresSafeArea()
+            // Animated background gradient
+            LinearGradient(
+                colors: pages[currentPage].gradient + [Color.black.opacity(0.1)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            .animation(.smooth, value: currentPage)
 
-            VStack {
+            VStack(spacing: 0) {
+                // Pages
                 TabView(selection: $currentPage) {
-                    OnboardingPageView(
-                        systemImage: "shield.fill",
-                        title: "Take Control",
-                        description: "Block harmful content across Safari and take the first step towards a healthier digital life.",
-                        accentColor: .blue
-                    )
-                    .tag(0)
-
-                    OnboardingPageView(
-                        systemImage: "chart.line.uptrend.xyaxis",
-                        title: "Track Your Progress",
-                        description: "Monitor your streak, see blocked attempts, and celebrate your victories every day.",
-                        accentColor: .green
-                    )
-                    .tag(1)
-
-                    OnboardingPageView(
-                        systemImage: "person.2.fill",
-                        title: "Build Accountability",
-                        description: "Stay motivated with daily reminders and optional accountability features.",
-                        accentColor: .orange
-                    )
-                    .tag(2)
-
-                    OnboardingPageView(
-                        systemImage: "checkmark.circle.fill",
-                        title: "You've Got This",
-                        description: "Join thousands of people reclaiming their time and mental clarity.",
-                        accentColor: .purple
-                    )
-                    .tag(3)
+                    ForEach(0..<pages.count, id: \.self) { index in
+                        OnboardingPageView(
+                            systemImage: pages[index].icon,
+                            title: pages[index].title,
+                            description: pages[index].description,
+                            gradient: pages[index].gradient,
+                            pageIndex: index
+                        )
+                        .tag(index)
+                    }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .tabViewStyle(.page(indexDisplayMode: .never))
 
-                if currentPage == 3 {
-                    Button(action: {
-                        withAnimation {
+                // Custom Page Indicator
+                HStack(spacing: 8) {
+                    ForEach(0..<pages.count, id: \.self) { index in
+                        Capsule()
+                            .fill(currentPage == index ? Color.white : Color.white.opacity(0.4))
+                            .frame(width: currentPage == index ? 24 : 8, height: 8)
+                            .animation(.smooth, value: currentPage)
+                    }
+                }
+                .padding(.bottom, Spacing.lg)
+
+                // Button
+                Button(action: {
+                    if currentPage == pages.count - 1 {
+                        withAnimation(.smooth) {
                             isOnboardingComplete = true
                         }
-                    }) {
-                        Text("Get Started")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(Color.blue)
-                            .cornerRadius(16)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 40)
-                } else {
-                    Button(action: {
-                        withAnimation {
+                    } else {
+                        withAnimation(.smooth) {
                             currentPage += 1
                         }
-                    }) {
-                        Text("Next")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(Color.blue)
-                            .cornerRadius(16)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 40)
+                }) {
+                    HStack(spacing: 12) {
+                        Text(currentPage == pages.count - 1 ? "Get Started" : "Continue")
+                            .font(.headline)
+
+                        Image(systemName: currentPage == pages.count - 1 ? "checkmark" : "arrow.right")
+                            .font(.headline)
+                    }
+                    .foregroundColor(pages[currentPage].gradient.first ?? .blue)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(
+                        Capsule()
+                            .fill(.white)
+                            .shadow(color: .black.opacity(0.1), radius: 20, y: 10)
+                    )
+                }
+                .scaleButton()
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, Spacing.xxl)
+
+                if currentPage < pages.count - 1 {
+                    Button("Skip") {
+                        withAnimation(.smooth) {
+                            currentPage = pages.count - 1
+                        }
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+                    .padding(.bottom, Spacing.lg)
                 }
             }
         }
@@ -95,29 +108,58 @@ struct OnboardingPageView: View {
     let systemImage: String
     let title: String
     let description: String
-    let accentColor: Color
+    let gradient: [Color]
+    let pageIndex: Int
+
+    @State private var isAnimated = false
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: Spacing.xxl) {
             Spacer()
 
-            Image(systemName: systemImage)
-                .font(.system(size: 100))
-                .foregroundColor(accentColor)
+            // Icon with animated background
+            ZStack {
+                Circle()
+                    .fill(.white.opacity(0.2))
+                    .frame(width: 200, height: 200)
+                    .blur(radius: 20)
+                    .scaleEffect(isAnimated ? 1.1 : 0.9)
+                    .animation(.smooth.repeatForever(autoreverses: true).delay(Double(pageIndex) * 0.2), value: isAnimated)
 
-            VStack(spacing: 16) {
+                Circle()
+                    .fill(.white.opacity(0.15))
+                    .frame(width: 160, height: 160)
+                    .blur(radius: 10)
+
+                Image(systemName: systemImage)
+                    .font(.system(size: 80, weight: .medium))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
+            }
+            .padding(.top, Spacing.xxl)
+
+            // Content
+            VStack(spacing: Spacing.lg) {
                 Text(title)
-                    .font(.system(size: 32, weight: .bold))
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+                    .shadow(color: .black.opacity(0.1), radius: 5, y: 2)
 
                 Text(description)
-                    .font(.system(size: 18))
-                    .foregroundColor(.secondary)
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white.opacity(0.95))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .lineSpacing(6)
+                    .padding(.horizontal, Spacing.xl)
+                    .shadow(color: .black.opacity(0.1), radius: 3, y: 1)
             }
 
             Spacer()
+        }
+        .onAppear {
+            isAnimated = true
         }
     }
 }
