@@ -1,0 +1,182 @@
+[
+    {
+        "trigger": {
+            "url-filter": ".*pornhub\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*xvideos\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*xnxx\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*redtube\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*youporn\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*tube8\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*spankbang\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*xhamster\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*txxx\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*beeg\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*eporner\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*motherless\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*hqporner\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*4porn\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*porn\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*tnaflix\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*porntrex\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*cam4\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*chaturbate\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    },
+    {
+        "trigger": {
+            "url-filter": ".*stripchat\\.com.*",
+            "resource-type": ["document", "image", "style-sheet", "script", "media"]
+        },
+        "action": {
+            "type": "block"
+        }
+    }
+]

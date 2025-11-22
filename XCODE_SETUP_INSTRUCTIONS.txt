@@ -1,0 +1,85 @@
+FOCUSER APP - XCODE SETUP INSTRUCTIONS
+======================================
+
+IMPORTANT: Follow these steps to complete the Xcode project setup for the Content Blocker extension.
+
+STEP 1: Add Content Blocker Extension Target ✓ COMPLETED
+----------------------------------------------------------
+1. Open Focuser.xcodeproj in Xcode ✓
+2. Click File > New > Target ✓
+3. Select "Content Blocker Extension" template ✓
+4. Name it: ContentBlocker ✓
+5. Bundle Identifier: com.focuser.app.ContentBlocker ✓
+6. Click Finish ✓
+7. When prompted "Activate scheme?", click Activate ✓
+
+STEP 2: ContentBlocker Files ✓ UPDATED
+---------------------------------------
+The ContentBlocker extension files have been updated with the proper implementation.
+No manual action needed - the files are already in place and configured.
+
+STEP 3: Configure App Groups (CRITICAL)
+----------------------------------------
+1. Select the Focuser project in Project Navigator
+2. Select the "Focuser" target
+3. Go to "Signing & Capabilities" tab
+4. Click "+ Capability"
+5. Add "App Groups"
+6. Click "+" under App Groups and add: group.com.focuser.app
+7. Now select the "ContentBlocker" target
+8. Repeat steps 3-6 to add the same App Group
+9. Both targets should now share: group.com.focuser.app
+
+STEP 4: Add Files to Main App Target
+-------------------------------------
+1. In Project Navigator, select all files in the Focuser/Models, Focuser/Managers, and Focuser/Views folders
+2. In the File Inspector (right panel), under "Target Membership", ensure "Focuser" is checked
+3. Make sure ContentView.swift is no longer needed (can be deleted)
+
+STEP 5: Update Build Settings
+------------------------------
+1. Select the Focuser project
+2. Select the "Focuser" target
+3. Go to Build Settings
+4. Search for "iOS Deployment Target"
+5. Set it to iOS 15.0 or later
+6. Repeat for ContentBlocker target
+
+STEP 6: Configure Signing
+--------------------------
+1. Select Focuser target > Signing & Capabilities
+2. Select your Team
+3. Ensure "Automatically manage signing" is checked
+4. Repeat for ContentBlocker target
+
+STEP 7: Enable Content Blocker in Safari (On Device)
+----------------------------------------------------
+After installing the app on your device:
+1. Open Settings app
+2. Scroll to Safari
+3. Tap "Extensions"
+4. Find "Focuser" and toggle it ON
+5. Tap on Focuser and ensure "All Websites" is selected
+
+STEP 8: Test the App
+--------------------
+1. Build and Run on a real device (Content Blockers don't work in Simulator)
+2. Complete the onboarding flow
+3. Enable the extension in Safari Settings
+4. Try visiting a blocked site in Safari
+5. It should be blocked!
+
+TROUBLESHOOTING
+---------------
+- If builds fail: Clean build folder (Cmd+Shift+K) and rebuild
+- If App Groups don't work: Make sure both targets have the EXACT same group name
+- If blocking doesn't work: Check that the extension is enabled in Safari Settings
+- Content Blockers only work in Safari, not in other browsers on iOS
+- Content Blockers only work on physical devices, not in Simulator
+
+IMPORTANT NOTES
+---------------
+- The app uses App Groups to share data between the main app and the extension
+- The bundle ID for the extension must be: com.focuser.app.ContentBlocker (or match your main app's ID + .ContentBlocker)
+- You need a paid Apple Developer account to test on a physical device
+- Content blocking only works in Safari on iOS
