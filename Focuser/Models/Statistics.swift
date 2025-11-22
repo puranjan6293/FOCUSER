@@ -8,51 +8,32 @@
 import Foundation
 
 struct Statistics: Codable {
-    var totalBlocks: Int
-    var currentStreak: Int
+    var manualResists: Int
     var longestStreak: Int
-    var lastBlockDate: Date?
-    var streakStartDate: Date
-    var dailyBlocks: [String: Int]
+    var startDate: Date
+    var lastCheckInDate: Date?
+    var dailyCheckIns: [String: Int]
 
     init() {
-        self.totalBlocks = 0
-        self.currentStreak = 0
+        self.manualResists = 0
         self.longestStreak = 0
-        self.lastBlockDate = nil
-        self.streakStartDate = Date()
-        self.dailyBlocks = [:]
+        self.startDate = Date()
+        self.lastCheckInDate = nil
+        self.dailyCheckIns = [:]
     }
 
-    mutating func recordBlock() {
-        totalBlocks += 1
-        lastBlockDate = Date()
+    mutating func recordResist() {
+        manualResists += 1
+        lastCheckInDate = Date()
 
         let dateKey = dateFormatter.string(from: Date())
-        dailyBlocks[dateKey, default: 0] += 1
+        dailyCheckIns[dateKey, default: 0] += 1
     }
 
-    mutating func updateStreak() {
-        guard let lastBlock = lastBlockDate else {
-            currentStreak = 0
-            return
-        }
-
+    var daysClean: Int {
         let calendar = Calendar.current
-        let daysSinceLastBlock = calendar.dateComponents([.day], from: lastBlock, to: Date()).day ?? 0
-
-        if daysSinceLastBlock == 0 {
-            currentStreak += 1
-        } else if daysSinceLastBlock == 1 {
-            currentStreak += 1
-        } else {
-            currentStreak = 0
-            streakStartDate = Date()
-        }
-
-        if currentStreak > longestStreak {
-            longestStreak = currentStreak
-        }
+        let days = calendar.dateComponents([.day], from: startDate, to: Date()).day ?? 0
+        return max(0, days)
     }
 
     private var dateFormatter: DateFormatter {

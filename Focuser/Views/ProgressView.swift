@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProgressView: View {
     @EnvironmentObject var statisticsManager: StatisticsManager
+    @EnvironmentObject var blocklistManager: BlocklistManager
 
     var body: some View {
         NavigationView {
@@ -37,39 +38,39 @@ struct ProgressView: View {
 
                     VStack(spacing: 16) {
                         ProgressCard(
-                            title: "Current Streak",
-                            value: "\(statisticsManager.streakDays)",
-                            unit: "days",
-                            icon: "flame.fill",
-                            color: .orange,
-                            description: "Keep the momentum going!"
-                        )
-
-                        ProgressCard(
-                            title: "Longest Streak",
-                            value: "\(statisticsManager.statistics.longestStreak)",
-                            unit: "days",
-                            icon: "trophy.fill",
-                            color: .yellow,
-                            description: "Your personal record"
-                        )
-
-                        ProgressCard(
-                            title: "Total Blocks",
-                            value: "\(statisticsManager.statistics.totalBlocks)",
-                            unit: "attempts",
-                            icon: "shield.checkmark.fill",
-                            color: .green,
-                            description: "Temptations resisted"
-                        )
-
-                        ProgressCard(
-                            title: "Days Active",
-                            value: "\(daysActive)",
+                            title: "Days Clean",
+                            value: "\(statisticsManager.daysClean)",
                             unit: "days",
                             icon: "calendar.badge.checkmark",
                             color: .blue,
                             description: "Since you started"
+                        )
+
+                        ProgressCard(
+                            title: "Times Resisted",
+                            value: "\(statisticsManager.statistics.manualResists)",
+                            unit: "victories",
+                            icon: "hand.raised.fill",
+                            color: .green,
+                            description: "Urges you conquered"
+                        )
+
+                        ProgressCard(
+                            title: "Sites Protected",
+                            value: "\(blocklistManager.blockedSites.count)",
+                            unit: "domains",
+                            icon: "shield.fill",
+                            color: .orange,
+                            description: "Blocked in Safari"
+                        )
+
+                        ProgressCard(
+                            title: "Daily Average",
+                            value: String(format: "%.1f", dailyAverage),
+                            unit: "check-ins",
+                            icon: "chart.line.uptrend.xyaxis",
+                            color: .purple,
+                            description: "Your consistency"
                         )
                     }
                     .padding(.horizontal)
@@ -79,13 +80,13 @@ struct ProgressView: View {
                             .font(.headline)
 
                         VStack(spacing: 12) {
-                            MilestoneRow(title: "First Day", achieved: statisticsManager.streakDays >= 1)
-                            MilestoneRow(title: "One Week Clean", achieved: statisticsManager.streakDays >= 7)
-                            MilestoneRow(title: "Two Weeks Strong", achieved: statisticsManager.streakDays >= 14)
-                            MilestoneRow(title: "One Month Champion", achieved: statisticsManager.streakDays >= 30)
-                            MilestoneRow(title: "90-Day Warrior", achieved: statisticsManager.streakDays >= 90)
-                            MilestoneRow(title: "Half Year Hero", achieved: statisticsManager.streakDays >= 180)
-                            MilestoneRow(title: "One Year Legend", achieved: statisticsManager.streakDays >= 365)
+                            MilestoneRow(title: "First Day", achieved: statisticsManager.daysClean >= 1)
+                            MilestoneRow(title: "One Week Clean", achieved: statisticsManager.daysClean >= 7)
+                            MilestoneRow(title: "Two Weeks Strong", achieved: statisticsManager.daysClean >= 14)
+                            MilestoneRow(title: "One Month Champion", achieved: statisticsManager.daysClean >= 30)
+                            MilestoneRow(title: "90-Day Warrior", achieved: statisticsManager.daysClean >= 90)
+                            MilestoneRow(title: "Half Year Hero", achieved: statisticsManager.daysClean >= 180)
+                            MilestoneRow(title: "One Year Legend", achieved: statisticsManager.daysClean >= 365)
                         }
                     }
                     .padding()
@@ -102,10 +103,11 @@ struct ProgressView: View {
         }
     }
 
-    private var daysActive: Int {
-        let calendar = Calendar.current
-        let days = calendar.dateComponents([.day], from: statisticsManager.statistics.streakStartDate, to: Date()).day ?? 0
-        return max(1, days)
+    private var dailyAverage: Double {
+        guard statisticsManager.daysClean > 0 else { return 0 }
+        let total = Double(statisticsManager.statistics.manualResists)
+        let days = Double(max(1, statisticsManager.daysClean))
+        return total / days
     }
 }
 

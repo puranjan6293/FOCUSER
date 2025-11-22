@@ -23,9 +23,8 @@ class StatisticsManager: ObservableObject {
         }
     }
 
-    func recordBlock() {
-        statistics.recordBlock()
-        statistics.updateStreak()
+    func recordResist() {
+        statistics.recordResist()
         save()
     }
 
@@ -40,9 +39,14 @@ class StatisticsManager: ObservableObject {
         }
     }
 
-    var streakDays: Int {
-        let calendar = Calendar.current
-        let daysSinceStart = calendar.dateComponents([.day], from: statistics.streakStartDate, to: Date()).day ?? 0
-        return max(daysSinceStart, statistics.currentStreak)
+    var daysClean: Int {
+        statistics.daysClean
+    }
+
+    var todayCheckIns: Int {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let today = dateFormatter.string(from: Date())
+        return statistics.dailyCheckIns[today] ?? 0
     }
 }

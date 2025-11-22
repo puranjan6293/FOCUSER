@@ -32,6 +32,7 @@ struct HomeView: View {
 
             ProgressView()
                 .environmentObject(statisticsManager)
+                .environmentObject(blocklistManager)
                 .tabItem {
                     Label("Progress", systemImage: "chart.line.uptrend.xyaxis")
                 }
@@ -69,12 +70,12 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     VStack(spacing: 16) {
-                        Text("Current Streak")
+                        Text("Days Clean")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
 
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text("\(statisticsManager.streakDays)")
+                            Text("\(statisticsManager.daysClean)")
                                 .font(.system(size: 72, weight: .bold, design: .rounded))
                                 .foregroundStyle(
                                     LinearGradient(
@@ -89,8 +90,12 @@ struct DashboardView: View {
                                 .foregroundColor(.secondary)
                         }
 
-                        if statisticsManager.streakDays > 0 {
+                        if statisticsManager.daysClean > 0 {
                             Text("Keep going! You're doing amazing.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Your journey starts today!")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -105,32 +110,54 @@ struct DashboardView: View {
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                         StatCard(
-                            title: "Blocked Today",
-                            value: "\(todayBlocks)",
-                            icon: "shield.checkmark.fill",
-                            color: .green
-                        )
-
-                        StatCard(
-                            title: "Total Blocks",
-                            value: "\(statisticsManager.statistics.totalBlocks)",
-                            icon: "checkmark.shield.fill",
+                            title: "Sites Protected",
+                            value: "\(blocklistManager.blockedSites.count)",
+                            icon: "shield.fill",
                             color: .blue
                         )
 
                         StatCard(
-                            title: "Sites Blocked",
-                            value: "\(blocklistManager.blockedSites.count)",
-                            icon: "list.bullet.rectangle.fill",
+                            title: "Times Resisted",
+                            value: "\(statisticsManager.statistics.manualResists)",
+                            icon: "hand.raised.fill",
+                            color: .green
+                        )
+
+                        StatCard(
+                            title: "Today's Wins",
+                            value: "\(statisticsManager.todayCheckIns)",
+                            icon: "checkmark.circle.fill",
                             color: .orange
                         )
 
                         StatCard(
-                            title: "Best Streak",
-                            value: "\(statisticsManager.statistics.longestStreak)",
-                            icon: "flame.fill",
-                            color: .red
+                            title: "Days Active",
+                            value: "\(statisticsManager.daysClean)",
+                            icon: "calendar.badge.checkmark",
+                            color: .purple
                         )
+                    }
+                    .padding(.horizontal)
+
+                    Button(action: {
+                        statisticsManager.recordResist()
+                    }) {
+                        HStack {
+                            Image(systemName: "hand.raised.fill")
+                            Text("I Resisted an Urge")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(
+                            LinearGradient(
+                                colors: [.green, .blue],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(16)
                     }
                     .padding(.horizontal)
 
@@ -184,12 +211,6 @@ struct DashboardView: View {
         }
     }
 
-    private var todayBlocks: Int {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let today = dateFormatter.string(from: Date())
-        return statisticsManager.statistics.dailyBlocks[today] ?? 0
-    }
 }
 
 struct StatCard: View {

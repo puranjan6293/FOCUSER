@@ -57,14 +57,22 @@ struct BlockedSitesView: View {
                                 HStack {
                                     Image(systemName: "info.circle.fill")
                                         .foregroundColor(.blue)
-                                    Text("Enable Content Blocker in Safari")
-                                        .foregroundColor(.primary)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Enable Content Blocker in Safari")
+                                            .foregroundColor(.primary)
+                                        Text("Works in Safari only")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
                             }
+                        } footer: {
+                            Text("⚠️ Content blocking only works in Safari. Chrome, Firefox, and other browsers are not supported due to iOS limitations.")
+                                .font(.caption)
                         }
 
                         Section(header: Text("Blocked Sites (\(blocklistManager.blockedSites.count))")) {
