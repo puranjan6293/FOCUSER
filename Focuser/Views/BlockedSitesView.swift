@@ -178,6 +178,10 @@ struct BlockedSitesView: View {
                     }
                 }
             }
+            .onAppear {
+                // Refresh authorization status when view appears
+                screenTimeManager.checkAuthorizationStatus()
+            }
             .sheet(isPresented: $showingAddSite) {
                 AddSiteSheet(
                     isPresented: $showingAddSite,

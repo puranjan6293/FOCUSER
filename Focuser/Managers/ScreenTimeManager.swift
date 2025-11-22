@@ -9,6 +9,7 @@ import Foundation
 import FamilyControls
 import ManagedSettings
 import Combine
+import UIKit
 
 @MainActor
 class ScreenTimeManager: ObservableObject {
@@ -25,6 +26,20 @@ class ScreenTimeManager: ObservableObject {
 
     private init() {
         checkAuthorizationStatus()
+        setupAppLifecycleObserver()
+    }
+
+    private func setupAppLifecycleObserver() {
+        // Observe when app becomes active to refresh auth status
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.checkAuthorizationStatus()
+            }
+        }
     }
 
     func checkAuthorizationStatus() {
