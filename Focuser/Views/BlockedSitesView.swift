@@ -17,213 +17,95 @@ struct BlockedSitesView: View {
     @State private var showingEnableInstructions = false
     @State private var showingReloadAlert = false
     @State private var reloadMessage = ""
-    @State private var showScreenTimeAuth = false
-
     var body: some View {
         NavigationView {
             ZStack {
                 if blocklistManager.blockedSites.isEmpty {
+                    // Clean empty state
                     VStack(spacing: 24) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.blue.opacity(0.1))
-                                .frame(width: 120, height: 120)
+                        Spacer()
 
-                            Image(systemName: "shield.slash.fill")
-                                .font(.system(size: 60))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: Color.primaryGradient,
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                        }
-                        .padding(.top, 40)
+                        Image(systemName: "shield.lefthalf.filled")
+                            .font(.system(size: 64))
+                            .foregroundColor(.blue)
 
                         VStack(spacing: 8) {
-                            Text("No sites blocked yet")
+                            Text("No Sites Blocked")
                                 .font(.title2)
-                                .fontWeight(.bold)
+                                .fontWeight(.semibold)
 
-                            Text("Add sites to your blocklist to get started")
-                                .font(.subheadline)
+                            Text("Add websites to protect yourself")
+                                .font(.body)
                                 .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
                         }
 
                         Button(action: {
                             showingAddSite = true
                         }) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "plus.circle.fill")
-                                Text("Add Your First Site")
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(height: 54)
-                            .frame(maxWidth: 300)
-                            .background(
-                                LinearGradient(
-                                    colors: Color.primaryGradient,
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: Color.blue.opacity(0.3), radius: 15, y: 8)
+                            Text("Add Site")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(width: 200, height: 52)
+                                .background(Color.blue)
+                                .cornerRadius(16)
                         }
                         .scaleButton()
-                        .padding(.top, 8)
+
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List {
+                        // Protection settings - simple toggle
                         Section {
-                            if screenTimeManager.isAuthorized {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.green.opacity(0.15))
-                                                .frame(width: 44, height: 44)
-
-                                            Image(systemName: "checkmark.shield.fill")
-                                                .foregroundColor(.green)
-                                                .font(.title3)
-                                        }
-
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Cross-Browser Protection")
-                                                .font(.subheadline)
-                                                .fontWeight(.semibold)
-                                            Text("Active in all browsers")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        Spacer()
-                                    }
-                                }
-                                .padding(.vertical, 8)
-                            } else {
-                                Button(action: {
-                                    showScreenTimeAuth = true
-                                }) {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        HStack {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(Color.orange.opacity(0.15))
-                                                    .frame(width: 44, height: 44)
-
-                                                Image(systemName: "exclamationmark.shield.fill")
-                                                    .foregroundColor(.orange)
-                                                    .font(.title3)
-                                            }
-
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Enable All-Browser Blocking")
-                                                    .font(.subheadline)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(.primary)
-                                                Text("Block in Chrome, Firefox, Opera, etc.")
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            Spacer()
-                                            Image(systemName: "chevron.right")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
+                            Toggle(isOn: Binding(
+                                get: { screenTimeManager.isAuthorized },
+                                set: { newValue in
+                                    if newValue {
+                                        Task {
+                                            try? await screenTimeManager.requestAuthorization()
                                         }
                                     }
-                                    .padding(.vertical, 8)
                                 }
-                                .scaleButton()
+                            )) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("All-Browser Blocking")
+                                        .font(.body)
+
+                                    Text("Blocks sites in Chrome, Firefox, etc.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
-
-                            Button(action: {
-                                showingEnableInstructions = true
-                            }) {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.blue.opacity(0.15))
-                                                .frame(width: 44, height: 44)
-
-                                            Image(systemName: "safari")
-                                                .foregroundColor(.blue)
-                                                .font(.title3)
-                                        }
-
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Safari Content Blocker")
-                                                .font(.subheadline)
-                                                .fontWeight(.semibold)
-                                                .foregroundColor(.primary)
-                                            Text("Extra protection layer")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                .padding(.vertical, 8)
-                            }
-                            .scaleButton()
                         } footer: {
                             if screenTimeManager.isAuthorized {
-                                Text("You have the best protection! Sites are blocked in ALL browsers using Screen Time + Safari Content Blocker.")
-                                    .font(.caption)
-                            } else {
-                                Text("Safari-only blocking is active. Enable Screen Time for protection in Chrome, Firefox, and all other browsers.")
-                                    .font(.caption)
+                                Text("Cross-browser protection is active")
                             }
                         }
 
-                        Section(header: Text("Blocked Sites (\(blocklistManager.blockedSites.count))").font(.subheadline).fontWeight(.semibold)) {
+                        Section(header: Text("Blocked Sites")) {
                             ForEach(blocklistManager.blockedSites.sorted(by: { $0.domain < $1.domain })) { site in
                                 HStack(spacing: 12) {
-                                    ZStack {
-                                        Circle()
-                                            .fill((site.isDefault ? Color.blue : Color.green).opacity(0.15))
-                                            .frame(width: 36, height: 36)
-
-                                        Image(systemName: "shield.fill")
-                                            .foregroundColor(site.isDefault ? .blue : .green)
-                                            .font(.system(size: 14))
-                                    }
+                                    Image(systemName: "shield.fill")
+                                        .foregroundColor(site.isDefault ? .blue : .green)
+                                        .font(.body)
 
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(site.domain)
                                             .font(.body)
-                                            .fontWeight(.medium)
 
-                                        HStack(spacing: 6) {
-                                            if site.isDefault {
-                                                Text("Default")
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            } else {
-                                                Text("Added \(formattedDate(site.dateAdded))")
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
+                                        if !site.isDefault {
+                                            Text("Added \(formattedDate(site.dateAdded))")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
                                         }
                                     }
-
-                                    Spacer()
                                 }
                                 .padding(.vertical, 4)
                             }
                             .onDelete(perform: deleteSites)
                         }
                     }
-                    .listStyle(InsetGroupedListStyle())
+                    .listStyle(.insetGrouped)
                 }
             }
             .navigationTitle("Blocklist")
@@ -245,9 +127,11 @@ struct BlockedSitesView: View {
                         blocklistManager.reloadContentBlocker { success, error in
                             DispatchQueue.main.async {
                                 if success {
-                                    reloadMessage = "Site added! Close Safari tabs and reopen them to apply blocking."
+                                    reloadMessage = "Site added successfully"
+                                    Haptics.success()
                                 } else {
-                                    reloadMessage = "Site added but blocker reload failed: \(error ?? "Unknown error")"
+                                    reloadMessage = "Site added but reload failed: \(error ?? "Unknown")"
+                                    Haptics.error()
                                 }
                                 showingReloadAlert = true
                             }
@@ -259,13 +143,10 @@ struct BlockedSitesView: View {
             .sheet(isPresented: $showingEnableInstructions) {
                 EnableContentBlockerSheet(isPresented: $showingEnableInstructions)
             }
-            .alert("Blocklist Updated", isPresented: $showingReloadAlert) {
+            .alert("Success", isPresented: $showingReloadAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(reloadMessage)
-            }
-            .sheet(isPresented: $showScreenTimeAuth) {
-                ScreenTimeAuthView(isPresented: $showScreenTimeAuth)
             }
         }
     }
@@ -280,9 +161,11 @@ struct BlockedSitesView: View {
         blocklistManager.reloadContentBlocker { success, error in
             DispatchQueue.main.async {
                 if success {
-                    reloadMessage = "Site removed! Close Safari tabs and reopen them to apply changes."
+                    reloadMessage = "Site removed successfully"
+                    Haptics.success()
                 } else {
-                    reloadMessage = "Site removed but blocker reload failed: \(error ?? "Unknown error")"
+                    reloadMessage = "Site removed but reload failed: \(error ?? "Unknown")"
+                    Haptics.error()
                 }
                 showingReloadAlert = true
             }
@@ -296,6 +179,7 @@ struct BlockedSitesView: View {
     }
 }
 
+// Clean, minimal add sheet
 struct AddSiteSheet: View {
     @Binding var isPresented: Bool
     @Binding var newSiteDomain: String
@@ -303,99 +187,18 @@ struct AddSiteSheet: View {
 
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading, spacing: 28) {
-                VStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.blue.opacity(0.1))
-                            .frame(width: 80, height: 80)
-
-                        Image(systemName: "shield.lefthalf.filled.badge.checkmark")
-                            .font(.system(size: 40))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: Color.primaryGradient,
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-
-                    VStack(spacing: 8) {
-                        Text("Block a New Site")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        Text("Add any website you want to block")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 20)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Domain Name")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-
+            Form {
+                Section {
                     TextField("example.com", text: $newSiteDomain)
-                        .padding()
-                        .background(Color(.secondarySystemBackground))
-                        .cornerRadius(12)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                         .keyboardType(.URL)
+                } header: {
+                    Text("Domain")
+                } footer: {
+                    Text("Enter domain without http:// or www.\nExample: pornhub.com")
                 }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.blue)
-                            .font(.caption)
-                        Text("How to format:")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                    }
-
-                    Text("• Enter domain without http:// or www.\n• Example: pornhub.com\n• Subdomains work too: m.facebook.com")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineSpacing(4)
-                }
-                .padding()
-                .background(Color.blue.opacity(0.05))
-                .cornerRadius(12)
-
-                Spacer()
-
-                Button(action: {
-                    onAdd()
-                    isPresented = false
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Add to Blocklist")
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .background(
-                        LinearGradient(
-                            colors: newSiteDomain.isEmpty ? [Color.gray, Color.gray] : Color.primaryGradient,
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .cornerRadius(16)
-                    .shadow(color: newSiteDomain.isEmpty ? .clear : Color.blue.opacity(0.3), radius: 15, y: 8)
-                }
-                .scaleButton()
-                .disabled(newSiteDomain.isEmpty)
             }
-            .padding()
             .navigationTitle("Add Site")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -403,6 +206,14 @@ struct AddSiteSheet: View {
                     Button("Cancel") {
                         isPresented = false
                     }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        onAdd()
+                        isPresented = false
+                    }
+                    .disabled(newSiteDomain.isEmpty)
                 }
             }
         }
@@ -414,67 +225,39 @@ struct EnableContentBlockerSheet: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 28) {
-                    VStack(spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.blue.opacity(0.1))
-                                .frame(width: 100, height: 100)
-
-                            Image(systemName: "safari")
-                                .font(.system(size: 50))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: Color.primaryGradient,
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                        }
-
-                        VStack(spacing: 8) {
-                            Text("Safari Content Blocker")
+            List {
+                Section {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(spacing: 12) {
+                            Text("1")
                                 .font(.title2)
                                 .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                                .frame(width: 36, height: 36)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Circle())
 
-                            Text("Follow these steps to enable")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            Text("Open Settings → Safari → Extensions")
+                                .font(.body)
+                        }
+
+                        HStack(spacing: 12) {
+                            Text("2")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                                .frame(width: 36, height: 36)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Circle())
+
+                            Text("Toggle Focuser ON")
+                                .font(.body)
                         }
                     }
-                    .padding(.top)
+                    .padding(.vertical, 8)
+                }
 
-                    VStack(alignment: .leading, spacing: 20) {
-                        InstructionStep(
-                            number: "1",
-                            title: "Open Safari Settings",
-                            description: "Go to iOS Settings app and scroll to Safari",
-                            color: Color.primaryGradient[0]
-                        )
-
-                        InstructionStep(
-                            number: "2",
-                            title: "Tap Extensions",
-                            description: "Find and tap on 'Extensions' option",
-                            color: Color.primaryGradient[0]
-                        )
-
-                        InstructionStep(
-                            number: "3",
-                            title: "Enable Focuser",
-                            description: "Find 'Focuser' and toggle it ON",
-                            color: Color.successGradient[0]
-                        )
-
-                        InstructionStep(
-                            number: "4",
-                            title: "You're Protected!",
-                            description: "The content blocker is now active in Safari",
-                            color: Color.successGradient[0]
-                        )
-                    }
-
+                Section {
                     Button(action: {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
@@ -483,25 +266,9 @@ struct EnableContentBlockerSheet: View {
                         HStack {
                             Image(systemName: "gear")
                             Text("Open Settings")
-                                .fontWeight(.semibold)
                         }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(
-                            LinearGradient(
-                                colors: Color.primaryGradient,
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(16)
-                        .shadow(color: Color.blue.opacity(0.3), radius: 15, y: 8)
                     }
-                    .scaleButton()
-                    .padding(.top, 8)
                 }
-                .padding()
             }
             .navigationTitle("Setup Guide")
             .navigationBarTitleDisplayMode(.inline)
@@ -523,33 +290,24 @@ struct InstructionStep: View {
     let color: Color
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 48, height: 48)
+        HStack(spacing: 12) {
+            Text(number)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+                .frame(width: 36, height: 36)
+                .background(color.opacity(0.1))
+                .clipShape(Circle())
 
-                Text(number)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(color)
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.body)
-                    .fontWeight(.semibold)
+                    .fontWeight(.medium)
 
                 Text(description)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundColor(.secondary)
-                    .lineSpacing(2)
             }
-
-            Spacer()
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(16)
     }
 }
