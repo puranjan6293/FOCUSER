@@ -15,11 +15,13 @@ struct FocuserApp: App {
         WindowGroup {
             if settingsManager.settings.hasCompletedOnboarding {
                 HomeView()
+                    .environmentObject(settingsManager)
             } else {
                 OnboardingView(isOnboardingComplete: .init(
                     get: { settingsManager.settings.hasCompletedOnboarding },
                     set: { _ in settingsManager.completeOnboarding() }
                 ))
+                .environmentObject(settingsManager)
             }
         }
     }

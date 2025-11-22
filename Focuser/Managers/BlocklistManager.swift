@@ -8,6 +8,7 @@
 import Foundation
 import SafariServices
 
+@MainActor
 class BlocklistManager: ObservableObject {
     @Published var blockedSites: [BlockedSite] = []
 

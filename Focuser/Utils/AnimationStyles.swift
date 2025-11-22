@@ -100,9 +100,9 @@ struct AnimatedProgressRing: View {
         .onAppear {
             animatedProgress = progress
         }
-        .onChange(of: progress) { newValue in
+        .onChange(of: progress) {
             withAnimation(.smooth) {
-                animatedProgress = newValue
+                animatedProgress = progress
             }
         }
     }
