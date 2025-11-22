@@ -14,6 +14,8 @@ struct BlockedSitesView: View {
     @State private var showingAddSite = false
     @State private var newSiteDomain = ""
     @State private var showingEnableInstructions = false
+    @State private var showingReloadAlert = false
+    @State private var reloadMessage = ""
 
     var body: some View {
         NavigationView {
@@ -112,12 +114,27 @@ struct BlockedSitesView: View {
                     newSiteDomain: $newSiteDomain,
                     onAdd: {
                         blocklistManager.addSite(newSiteDomain)
+                        blocklistManager.reloadContentBlocker { success, error in
+                            DispatchQueue.main.async {
+                                if success {
+                                    reloadMessage = "Site added! Close Safari tabs and reopen them to apply blocking."
+                                } else {
+                                    reloadMessage = "Site added but blocker reload failed: \(error ?? "Unknown error")"
+                                }
+                                showingReloadAlert = true
+                            }
+                        }
                         newSiteDomain = ""
                     }
                 )
             }
             .sheet(isPresented: $showingEnableInstructions) {
                 EnableContentBlockerSheet(isPresented: $showingEnableInstructions)
+            }
+            .alert("Blocklist Updated", isPresented: $showingReloadAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(reloadMessage)
             }
         }
     }
@@ -127,6 +144,17 @@ struct BlockedSitesView: View {
         for index in offsets {
             let site = sortedSites[index]
             blocklistManager.removeSite(site)
+        }
+
+        blocklistManager.reloadContentBlocker { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    reloadMessage = "Site removed! Close Safari tabs and reopen them to apply changes."
+                } else {
+                    reloadMessage = "Site removed but blocker reload failed: \(error ?? "Unknown error")"
+                }
+                showingReloadAlert = true
+            }
         }
     }
 

@@ -12,7 +12,7 @@ class StatisticsManager: ObservableObject {
     @Published var statistics: Statistics
 
     private let statisticsKey = "user_statistics"
-    private let defaults = UserDefaults(suiteName: "group.com.focuser.app") ?? .standard
+    private let defaults = UserDefaults(suiteName: "group.com.puranjanics.Focuser") ?? .standard
 
     init() {
         if let data = defaults.data(forKey: statisticsKey),

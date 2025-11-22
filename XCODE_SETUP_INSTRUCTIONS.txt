@@ -25,10 +25,12 @@ STEP 3: Configure App Groups (CRITICAL)
 3. Go to "Signing & Capabilities" tab
 4. Click "+ Capability"
 5. Add "App Groups"
-6. Click "+" under App Groups and add: group.com.focuser.app
+6. Click "+" under App Groups and add: group.com.puranjanics.Focuser
 7. Now select the "ContentBlocker" target
 8. Repeat steps 3-6 to add the same App Group
-9. Both targets should now share: group.com.focuser.app
+9. Both targets should now share: group.com.puranjanics.Focuser
+
+IMPORTANT: Make sure you use the EXACT same App Group name in both targets!
 
 STEP 4: Add Files to Main App Target
 -------------------------------------

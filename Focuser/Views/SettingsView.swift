@@ -45,6 +45,10 @@ struct SettingsView: View {
                     }) {
                         Label("About Focuser", systemImage: "info.circle.fill")
                     }
+
+                    NavigationLink(destination: DebugView()) {
+                        Label("Debug Info", systemImage: "wrench.and.screwdriver")
+                    }
                 }
 
                 Section(header: Text("Data")) {
