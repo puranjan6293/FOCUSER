@@ -11,7 +11,6 @@ import SafariServices
 struct BlockedSitesView: View {
     @EnvironmentObject var blocklistManager: BlocklistManager
     @EnvironmentObject var statisticsManager: StatisticsManager
-    @StateObject private var screenTimeManager = ScreenTimeManager.shared
     @State private var showingAddSite = false
     @State private var newSiteDomain = ""
     @State private var showingEnableInstructions = false
@@ -55,33 +54,6 @@ struct BlockedSitesView: View {
                     }
                 } else {
                     List {
-                        // Protection settings - simple toggle
-                        Section {
-                            Toggle(isOn: Binding(
-                                get: { screenTimeManager.isAuthorized },
-                                set: { newValue in
-                                    if newValue {
-                                        Task {
-                                            try? await screenTimeManager.requestAuthorization()
-                                        }
-                                    }
-                                }
-                            )) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("All-Browser Blocking")
-                                        .font(.body)
-
-                                    Text("Blocks sites in Chrome, Firefox, etc.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        } footer: {
-                            if screenTimeManager.isAuthorized {
-                                Text("Cross-browser protection is active")
-                            }
-                        }
-
                         // Safari extension setup
                         Section {
                             Button(action: {
@@ -177,10 +149,6 @@ struct BlockedSitesView: View {
                         Image(systemName: "plus")
                     }
                 }
-            }
-            .onAppear {
-                // Refresh authorization status when view appears
-                screenTimeManager.checkAuthorizationStatus()
             }
             .sheet(isPresented: $showingAddSite) {
                 AddSiteSheet(
